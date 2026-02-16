@@ -18,36 +18,28 @@
 
 void changemode(int);
 int kbhit(void);
+void time_delay(int);
 
+struct timeb t;
 
 int main(void) {
-
- int ch;
- int bitval = 1; // values used are 1, 2 & 4 to control LEDS
-
- int i, start_time, time_since;
- struct timeb t;
+ int start_time;
  ftime(&t);
- do{
  start_time = t.millitm;
- printf("%f/n",start_time);
- ftime(&t);
- 
- time_since = t.millitm;
- }
-
- }while(start_time < time_since);
-
-
+ int ch = 'l';
+ int bitval = 1; // values used are 1, 2 & 4 to control LEDS
 
  changemode(1);
  while (ch != 'q'){
 	 while (!kbhit()) {
+		time_delay(start_time);
+		//delay(100);
 		if (ch == 'l'){
 			bitval = bitval >> 1;
 			if (bitval > 4){
 				bitval = 1;
 			}
+			printf("led #%x",bitval);
 			ioctl(1,KDSETLED,bitval);
 		}
 		else if (ch == 'r'){
@@ -55,6 +47,7 @@ int main(void) {
 			if (bitval < 1){
 				bitval = 4;
 			}
+			printf("led #%x",bitval);
 			ioctl(1,KDSETLED,bitval);
 		}
 	 }
@@ -81,9 +74,20 @@ void changemode(int dir) {
  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
  }
 }
-// FUNCTION KBHIT //
 
-// CHECK SYSTEM FLAG FOR KEY PRESS. //
+void time_delay(int starttime){
+
+ int time_since;
+ do{
+// printf("%f/n",start_time);
+ ftime(&t);
+ 
+ time_since = t.millitm;
+printf("timesince %X",time_since);
+printf("starttime %X",starttime);
+ }while(starttime < (time_since - 1000));
+}
+
 int kbhit(void) {
  struct timeval tv;
  fd_set rdfs;

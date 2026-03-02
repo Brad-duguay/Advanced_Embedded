@@ -37,7 +37,7 @@ int btn_arr[] = {quit, rtol, ltor};
 
 volatile unsigned int *GPIO;
 
-main(void) {
+int main(void) {
   //VIRTUAL MEMORY SPACE FOR PI4
   unsigned int BASE = 0xFE200000;
 
@@ -147,7 +147,7 @@ void on_LED(int pin,
   int MASK = 1;
   MASK = (1 << pin);
   *(GPIO + hi_reg) = MASK;
-  usleep(1000000);
+//  usleep(100000);
   MASK = 0;
   *(GPIO + hi_reg) = MASK;
 }
@@ -163,7 +163,7 @@ void off_LED(int pin,
   int MASK = 1;
   MASK = (1 << pin);
   *(GPIO + lo_reg) = MASK;
-  usleep(100000);
+//  usleep(100000);
   MASK = ~MASK;
   *(GPIO + lo_reg) = *(GPIO + lo_reg) & MASK;
 }

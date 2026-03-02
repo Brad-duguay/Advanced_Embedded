@@ -20,6 +20,9 @@ assistance from time.h structures
 #define led2 6
 #define led3 5
 #define LED_amount 3
+#define hi 1
+#define lo 0
+#define delay 3
 
 int btn_arr[] = {quit, ltor, rtol};
 int LED_arr[] = {led1, led2, led3};
@@ -47,7 +50,7 @@ int main(void) {
 
     if (button == ltor) {
 
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < LED_amount; i++) {
 
         cycle(LED_arr[i], last_state);
 
@@ -76,9 +79,9 @@ param b: the last known button state
 side-effect:N/A
 */
 void cycle(int LED_num, int last_state) {
-  digitalWrite(LED_num, 1);
+  digitalWrite(LED_num, hi);
   interrupt(last_state);
-  digitalWrite(LED_num, 0);
+  digitalWrite(LED_num, lo);
 }
 
 /*
@@ -88,8 +91,8 @@ return: return the state of the button that is pressed based off of the array po
 Side-effect:N/A
 */
 int button_func(int last_state) {
-  for (int i = 0; i < 3; i++) {
-    if (digitalRead(btn_arr[i]) == 1) {
+  for (int i = 0; i < LED_amount; i++) {
+    if (digitalRead(btn_arr[i]) == hi) {
       return btn_arr[i];
     }
   }
@@ -112,7 +115,7 @@ side-effects: unsure if time structure function with ints, so used long long to 
 */
 void interrupt(int last_state) {
   long long delay_start = time_func();
-  while ((time_func() - delay_start) < 5) {
+  while ((time_func() - delay_start) < delay) {
     if (button_func(last_state) != last_state) {
       break;
     }

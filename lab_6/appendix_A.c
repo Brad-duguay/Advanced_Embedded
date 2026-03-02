@@ -1,7 +1,10 @@
-// P15 - PROGRAM GPIO MEM CONTROL //
-// Blink GPIO-17 until a HIGH on GPIO-27. //
-// PI 3 - GPIO memory starts at 0x3F200000 //
-// PI 4 - GPIO memory starts at 0xFE200000 //
+/*
+File:Lab6_masking.c
+Author:Bradley Duguay W0516067
+Date:2000/03/01
+Description: GPIO functionality using pi registers & bitmasking to control GPIO states
+*/
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/mman.h>
@@ -15,7 +18,11 @@
 #define LED_1 26
 #define LED_2 6
 #define LED_3 5
-#define sec_delay 1
+#define sec_delay 1 
+#define LED_amt 3
+#define hi_reg 7
+#define lo_reg 10
+#define btn_reg 13
 
 long long time_func();
 void interrupt(int);
@@ -31,14 +38,9 @@ int btn_arr[] = {quit, rtol, ltor};
 volatile unsigned int *GPIO;
 
 main(void) {
-  // USE VIRTUAL MEMORY SPACE FOR PI 3 //
-  // unsigned int BASE = 0x3F200000;
+  //VIRTUAL MEMORY SPACE FOR PI4
   unsigned int BASE = 0xFE200000;
-  // CREATE GPIO - A 4 BYTE //
-  // POINTER. INCREMENTING //
-  // GPIO BY 1 INCREASES THE //
-  // POINTER ADDRESS BY 4 //
-  //  volatile unsigned int *GPIO;
+
   int MEM, MASK;
   int button = ltor;
   // TEST FOR ROOT ACCESS //
@@ -89,26 +91,22 @@ main(void) {
   MASK = 0x00040000;
   *(GPIO + 2) = *(GPIO + 2) | MASK;
 
+
   do {
     button = btn_select(button);
     if (button == ltor) {
-      for (int i = 0; i < 3; i++) { // left to right
+      for (int i = 0; i < LED_amt; i++) { // left to right
 
         on_LED(LED_pins[i], LED_num[i]);
-
-        // sleep(sec_delay);
         interrupt(button);
         off_LED(LED_pins[i], LED_num[i]);
-
         btn_select(button);
       }
     } else if (button == rtol)
 
-      for (int i = 2; i >= 0; i--) { // right to left
+      for (int i = (LED_amt - 1); i >= 0; i--) { // right to left, led amount must be one less to properly index the array
 
         on_LED(LED_pins[i], LED_num[i]);
-
-        // sleep(sec_delay);
         interrupt(button);
         off_LED(LED_pins[i], LED_num[i]);
         btn_select(button);
@@ -117,49 +115,57 @@ main(void) {
   } while (button != quit);
   close(MEM);
 }
+/*
+Desc: handles checking each button pin to see if a button is pressed
+param a: the last seen button press
+return: returns the value of the GPIO pin corresponding to the button
+side-effect: N/A
+*/
+
+
 int btn_select(int last_button) {
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < LED_amt; i++) {
     int MASK = 1;
     MASK = (1 << btn_arr[i]);
-    int val = *(GPIO + 13) & MASK;
+    int val = *(GPIO + btn_reg) & MASK;
     if (val != 0) {
       return btn_arr[i];
     }
   }
   return last_button;
 }
+/*
+Desc: handles masking for turning the LEDs on
+param a: the pin corresponding to the led to be toggled
+side-effect: could be combined with off_LED function if GPIO pointer could be affected from a secondary parameter in main
+*/
 
 void on_LED(int pin,
             int position) { // bitshift a 1 bit to the bit position where the
                             // GPIO pin corresponds to the bit number
   int MASK = 1;
   MASK = (1 << pin);
-
-  // SET GPIO HIGH //
-  // 0000 0000 0000 0000 0000 0000 0010 0000 //
-  *(GPIO + 7) = MASK;
+  *(GPIO + hi_reg) = MASK;
   usleep(1000000);
-  // REMOVE HIGH COMMAND //
-  // 1111 1111 1111 1111 1111 1111 1101 1111 //
   MASK = 0;
-  *(GPIO + 7) = MASK;
+  *(GPIO + hi_reg) = MASK;
 }
+/*
+Desc: handles masking for turning the LEDs off
+param a: the pin corresponding to the led to be toggled
+side-effect: could be combined with on_LED function if GPIO pointer could be affected from a secondary parameter in main
+*/
 
 void off_LED(int pin,
              int position) { // bitshift a 1 bit to the bit position where the
                              // GPIO pin corresponds to the bit number
   int MASK = 1;
   MASK = (1 << pin);
-
-  // SET GPIO low //
-  // 0000 0000 0000 0000 0000 0000 0010 0000 //
-  *(GPIO + 10) = MASK;
+  *(GPIO + lo_reg) = MASK;
   usleep(100000);
-  // REMOVE low COMMAND //
-  // 1111 1111 1111 1111 1111 1111 1101 1111 //
   MASK = ~MASK;
-  *(GPIO + 10) = *(GPIO + 10) & MASK;
+  *(GPIO + lo_reg) = *(GPIO + lo_reg) & MASK;
 }
 
 /*
@@ -179,7 +185,7 @@ structure function with ints, so used long long to be safe
 */
 void interrupt(int last_state) {
   long long delay_start = time_func();
-  while ((time_func() - delay_start) < 5) {
+  while ((time_func() - delay_start) < sec_delay) {
     if (btn_select(last_state) != last_state) {
       break;
     }

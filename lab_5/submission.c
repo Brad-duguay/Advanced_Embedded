@@ -18,22 +18,22 @@
 
 void changemode(int);
 int kbhit(void);
-void time_delay(int);
+void time_delay();
 
 struct timeb t;
 
 int main(void) {
- int start_time;
- ftime(&t);
- start_time = t.millitm;
+// long long start_time;
+// ftime(&t);
+// start_time = t.millitm;
  int ch = 'l';
  int bitval = 1; // values used are 1, 2 & 4 to control LEDS
 
  changemode(1);
  while (ch != 'q'){
 	 while (!kbhit()) {
-		time_delay(start_time);
-		//delay(100);
+		time_delay();
+		printf("out of time loop\n");
 		if (ch == 'l'){
 			bitval = bitval >> 1;
 			if (bitval > 4){
@@ -54,7 +54,7 @@ int main(void) {
 
 	 ch = getchar();
 	 printf("\nGot %c\n", ch);
-	 if(ch = 'q'){
+	 if(ch == 'q'){
 	 	printf("Quitting program");
 	 }
  	 changemode(0);
@@ -75,17 +75,17 @@ void changemode(int dir) {
  }
 }
 
-void time_delay(int starttime){
-
- int time_since;
+void time_delay(){
+ long long starttime;
+ftime(&t);
+starttime = t.millitm;
+ long long time_since;
  do{
 // printf("%f/n",start_time);
  ftime(&t);
  
  time_since = t.millitm;
-printf("timesince %X",time_since);
-printf("starttime %X",starttime);
- }while(starttime < (time_since - 1000));
+ }while(time_since - starttime < 500);
 }
 
 int kbhit(void) {

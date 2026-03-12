@@ -1,5 +1,5 @@
 /* File: bitOps.c
-* Author: Denis Myer
+* Author: Denis Myers
 * Last Edited: Gary Hubley
 * Date: 2026/02/04
 * Description: DEMONSTRATION OF BOOLEAN AND SHIFT, BIT OPERATIONS
@@ -27,6 +27,33 @@ int main() {
  printf("A = (0011 0100) = %x\n", A);
  printf("SHIFT LEFT ONE (0110 1000) = %x\n", B);
  printf("SHIFT RIGHT TWO (0000 1101) = %x\n", C);
+
+	char escape = q; //key to press to end the program
+	int arr[] = {0,1,4,5,2,3,6,7};//array for bit value order of keyboard LED's as they are not in the "right" order
+	int num;
+do{
+	scanf("%d",&num);
+	if(num !=escape){
+		ioctl (1,KDSETLED,arr[num]);
+		}	
+	}while (num !=escape);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  return (0);
 }

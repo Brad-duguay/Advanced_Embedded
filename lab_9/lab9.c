@@ -1,7 +1,7 @@
 /*
 * File: lab9.c
 * Author: Bradley Duguay W0516067
-* Date: 2026/03/15
+* Date: 2026/03/22
 * Description: 
 */
 #include <math.h>
@@ -16,7 +16,6 @@
 
 int calc(void *arg);
 
-//mtx_t* mutex;
 typedef struct _matrice {
   int matrix_a[row][collumn];
   int matrix_b[row];
@@ -26,9 +25,6 @@ typedef struct _matrice {
 	
 
 int main(){	
-
-
-//	mtx_init(mutex, mtx_plain);
 
 	thrd_t thread[thrd_amt];
 
@@ -44,7 +40,6 @@ int main(){
 		thrd_join(thread[j], &m1.ans[j]);
 	}
 	printf("result = \n[%d\n%d\n%d]",m1.ans[0],m1.ans[1],m1.ans[2]);
-	//sleep(3);
 	return 0;
 }
 /*
@@ -55,15 +50,11 @@ int main(){
 * side effects: N/A
 */
 int calc(void *arg){
-//	mtx_lock(mutex);
 	int id = *(int*)arg;
 	int result = 0;
 	for(int i = 0; i < collumn; i++){
 		result += (m1.matrix_a[id][i])*(m1.matrix_b[i]);
-	//	printf("%d\n",result);
-		//m1.ans[i] = result;
 	}
-//	mtx_unlock(mutex);//mutex is an issue
 	sleep(1);
 	return result;
 }
